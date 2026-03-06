@@ -1,0 +1,91 @@
+{% extends "plugin.html" %}
+
+{% block content %}
+<div class="energy-dashboard">
+    {% if show_refresh_time %}
+    <div class="last-refresh">{{ last_refresh_time }}</div>
+    {% endif %}
+
+    <!-- Title -->
+    <div class="header">
+        <div class="title">{{ title }}</div>
+    </div>
+
+    <!-- Value Boxes Row -->
+    <div class="values-row">
+        <div class="value-box">
+            <svg class="box-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                    d="M11 21h-1l1-7H7.5c-.88 0-.33-.75-.31-.78C8.48 10.94 10.42 7.54 13.01 3h1l-1 7h3.51c.4 0 .62.19.4.66C12.97 17.55 11 21 11 21z" />
+            </svg>
+            <div class="box-label">{{ primary_name }}</div>
+            <div class="box-value">{{ primary_value }}<span class="box-unit">{{ primary_unit }}</span></div>
+        </div>
+
+        {% if has_secondary %}
+        <div class="value-box">
+            <svg class="box-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                    d="M3.55 18.54l1.41 1.06 1.06-1.41-1.41-1.06zM11 22.45h2V19.5h-2zM4 10.5H1v2h3zm9-9.95h-2V3.5h2zM20.96 4.63l-1.06-1.41-1.41 1.06 1.06 1.41zM20 10.5v2h3v-2zM12 5.5c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6z" />
+            </svg>
+            <div class="box-label">{{ secondary_name }}</div>
+            <div class="box-value">{{ secondary_value }}<span class="box-unit">{{ secondary_unit }}</span></div>
+        </div>
+        {% endif %}
+
+        {% if has_tertiary %}
+        <div class="value-box">
+            <svg class="box-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                    d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4zm-2.72 13.95h-1.9v-1.9h1.9v1.9zm1.35-5.26l-.87.87c-.56.56-.78 1.13-.78 1.94h-1.9c0-1.14.45-1.9 1.01-2.46l1.19-1.21c.28-.29.45-.69.45-1.14 0-.9-.73-1.63-1.63-1.63s-1.63.73-1.63 1.63H7.84c0-1.79 1.46-3.25 3.25-3.25s3.25 1.46 3.25 3.25c0 .71-.29 1.36-.76 1.83z" />
+            </svg>
+            <div class="box-label">{{ tertiary_name }}</div>
+            <div class="box-value">{{ tertiary_value }}<span class="box-unit">{{ tertiary_unit }}</span></div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- 24h Stacked Bar Chart (pure CSS) -->
+    {% if show_chart and bars %}
+    <div class="chart-section">
+        <div class="chart-title">24h Energy ({{ chart_unit }}/h)</div>
+        <div class="chart-area">
+            <div class="chart-y-axis">
+                <span>{{ chart_max }}</span>
+                <span>{{ (chart_max / 2) | round(1) }}</span>
+                <span>0</span>
+            </div>
+            <div class="chart-bars">
+                {% for bar in bars %}
+                <div class="bar-column">
+                    <div class="bar-stack">
+                        {% for seg in bar.segments %}
+                        {% if seg.pct > 0 %}
+                        <div class="bar-segment"
+                            style="height: {{ seg.pct }}%; background: {{ seg.color }}; border-top: 2px solid {{ seg.border }};">
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                    {% if loop.index0 % 3 == 0 %}
+                    <div class="bar-label">{{ bar.label }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% if chart_datasets | length > 1 %}
+        <div class="chart-legend">
+            {% for ds in chart_datasets %}
+            <div class="legend-item">
+                <span class="legend-color"
+                    style="background: {{ ds.bg_color }}; border: 1px solid {{ ds.border_color }};"></span>
+                <span class="legend-label">{{ ds.label }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

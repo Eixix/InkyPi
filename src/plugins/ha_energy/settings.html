@@ -1,0 +1,81 @@
+<div class="form-group">
+    <label for="ha_url" class="form-label">Home Assistant URL:</label>
+    <input type="text" id="ha_url" name="ha_url" class="form-input" placeholder="http://192.168.1.100:8123" />
+    <small style="opacity: 0.7;">The base URL of your Home Assistant instance</small>
+</div>
+
+<div class="form-group">
+    <label for="primary_entity" class="form-label">Consumption Entity:</label>
+    <input type="text" id="primary_entity" name="primary_entity" class="form-input"
+        placeholder="sensor.electricity_consumption_today" />
+    <small style="opacity: 0.7;">Energy consumption sensor (total_increasing kWh)</small>
+</div>
+
+<div class="form-group">
+    <label for="secondary_entity" class="form-label">Production Entity (optional):</label>
+    <input type="text" id="secondary_entity" name="secondary_entity" class="form-input"
+        placeholder="sensor.solar_production_today" />
+    <small style="opacity: 0.7;">Solar / energy production sensor (total_increasing kWh)</small>
+</div>
+
+<div class="form-group">
+    <label for="tertiary_entity" class="form-label">Grid Export Entity (optional):</label>
+    <input type="text" id="tertiary_entity" name="tertiary_entity" class="form-input"
+        placeholder="sensor.grid_export_today" />
+    <small style="opacity: 0.7;">Grid export / feed-in sensor (total_increasing kWh)</small>
+</div>
+
+<div class="form-group">
+    <label for="display_title" class="form-label">Display Title:</label>
+    <input type="text" id="display_title" name="display_title" class="form-input" value="Energy" placeholder="Energy" />
+</div>
+
+<div class="form-group">
+    <label class="form-label">Display Options:</label>
+
+    <div class="form-group">
+        <input type="checkbox" id="show_refresh_time" name="show_refresh_time"
+            onclick="this.value=this.checked ? 'true' : 'false';">
+        <span>Refresh Time</span>
+    </div>
+
+    <div class="form-group">
+        <input type="checkbox" id="show_metrics" name="show_metrics"
+            onclick="this.value=this.checked ? 'true' : 'false';">
+        <span>Metric Cards</span>
+    </div>
+
+    <div class="form-group">
+        <input type="checkbox" id="show_chart" name="show_chart" onclick="this.value=this.checked ? 'true' : 'false';">
+        <span>24h Usage Chart</span>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        if (loadPluginSettings) {
+            document.getElementById('ha_url').value = pluginSettings.ha_url || '';
+            document.getElementById('primary_entity').value = pluginSettings.primary_entity || '';
+            document.getElementById('secondary_entity').value = pluginSettings.secondary_entity || '';
+            document.getElementById('tertiary_entity').value = pluginSettings.tertiary_entity || '';
+            document.getElementById('display_title').value = pluginSettings.display_title || 'Energy';
+
+            document.getElementById('show_refresh_time').checked = pluginSettings.show_refresh_time === 'true';
+            document.getElementById('show_refresh_time').value = pluginSettings.show_refresh_time || 'true';
+
+            document.getElementById('show_metrics').checked = pluginSettings.show_metrics === 'true';
+            document.getElementById('show_metrics').value = pluginSettings.show_metrics || 'true';
+
+            document.getElementById('show_chart').checked = pluginSettings.show_chart === 'true';
+            document.getElementById('show_chart').value = pluginSettings.show_chart || 'true';
+        } else {
+            // Default values
+            document.getElementById('show_refresh_time').checked = true;
+            document.getElementById('show_refresh_time').value = 'true';
+            document.getElementById('show_metrics').checked = true;
+            document.getElementById('show_metrics').value = 'true';
+            document.getElementById('show_chart').checked = true;
+            document.getElementById('show_chart').value = 'true';
+        }
+    });
+</script>

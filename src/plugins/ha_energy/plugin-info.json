@@ -1,0 +1,5 @@
+{
+    "display_name": "Home Assistant Energy",
+    "id": "ha_energy",
+    "class": "HAEnergy"
+}

@@ -41,9 +41,9 @@
         "active_playlist": null
     },
     "refresh_info": {
-        "refresh_time": null,
-        "image_hash": null,
-        "refresh_type": null,
-        "plugin_id": null
+        "refresh_time": "2026-03-06T08:38:44.832345+00:00",
+        "image_hash": "1d8b5f5066e4c6ba5715b34c0b553bd47299512a51c6234b6e35ed45345d6016",
+        "refresh_type": "Manual Update",
+        "plugin_id": "ha_energy"
     }
 }

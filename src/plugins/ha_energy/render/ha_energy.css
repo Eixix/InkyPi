@@ -1,0 +1,252 @@
+/* Basic Reset */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.energy-dashboard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  font-family: "Jost";
+  position: relative;
+  padding: 1dvh 1vw;
+  gap: 0.5dvh;
+}
+
+/* Last Refresh */
+.last-refresh {
+  position: absolute;
+  top: 0.5dvh;
+  right: 0.5dvw;
+  font-size: min(1.8dvh, 1.8vw);
+  text-align: right;
+  font-weight: bold;
+  padding: 0.3dvh 0.5dvw;
+  opacity: 0.6;
+}
+
+/* Header */
+.header {
+  width: 100%;
+  text-align: center;
+  height: 8dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  container-type: size;
+}
+
+.title {
+  font-size: min(7cqh, 5cqi);
+  font-weight: bold;
+  text-align: center;
+  width: 100%;
+}
+
+/* Value Boxes Row */
+.values-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 1.5vw;
+  width: 100%;
+  padding: 0 1vw;
+  height: 20dvh;
+}
+
+.value-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid;
+  border-radius: 1.2vw;
+  padding: 1dvh 1vw;
+  flex: 1;
+  container-type: size;
+  overflow: hidden;
+  gap: 0.3dvh;
+}
+
+.box-icon {
+  width: auto;
+  height: 25%;
+  opacity: 0.7;
+}
+
+.box-label {
+  font-size: min(16cqh, 10cqi);
+  font-weight: 300;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.box-value {
+  font-size: min(30cqh, 18cqi);
+  font-weight: bold;
+  text-align: center;
+  line-height: 110%;
+}
+
+.box-unit {
+  font-size: 0.45em;
+  font-weight: 300;
+  margin-left: 0.2vw;
+}
+
+/* Chart Section */
+.chart-section {
+  width: 100%;
+  padding: 0 1vw;
+  display: flex;
+  flex-direction: column;
+}
+
+.chart-title {
+  font-size: min(2.2dvh, 2.2vw);
+  font-weight: bold;
+  text-align: center;
+  padding-bottom: 0.3dvh;
+}
+
+/* Chart Area: y-axis + bars */
+.chart-area {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  height: 55dvh;
+}
+
+.chart-y-axis {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding-right: 0.5vw;
+  padding-bottom: 2.5dvh;
+  /* room for x-axis labels */
+  font-size: min(1.6dvh, 1.6vw);
+  opacity: 0.6;
+  width: 6vw;
+  min-width: 30px;
+}
+
+.chart-bars {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  flex: 1;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.3);
+  border-left: 1px solid rgba(128, 128, 128, 0.3);
+  gap: 1px;
+  padding-bottom: 2.5dvh;
+  /* room for x-axis labels */
+  position: relative;
+}
+
+.bar-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  justify-content: flex-end;
+  position: relative;
+}
+
+.bar-stack {
+  width: 80%;
+  height: 100%;
+  display: flex;
+  flex-direction: column-reverse;
+}
+
+.bar-segment {
+  width: 100%;
+  min-height: 1px;
+}
+
+.bar-label {
+  position: absolute;
+  bottom: -2.3dvh;
+  font-size: min(1.5dvh, 1.5vw);
+  opacity: 0.6;
+  white-space: nowrap;
+}
+
+/* Chart Legend */
+.chart-legend {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 2vw;
+  padding: 0.5dvh 0;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5vw;
+  font-size: min(2dvh, 2vw);
+}
+
+.legend-color {
+  width: 1.5vw;
+  height: 1.5vw;
+  min-width: 8px;
+  min-height: 8px;
+  display: inline-block;
+}
+
+.legend-label {
+  white-space: nowrap;
+}
+
+/* Vertical orientation adjustments */
+@media (max-aspect-ratio: 1) {
+  .values-row {
+    flex-direction: column;
+    height: auto;
+    gap: 0.8dvh;
+  }
+
+  .value-box {
+    flex-direction: row;
+    height: 8dvh;
+    gap: 1vw;
+    padding: 0.5dvh 2vw;
+  }
+
+  .box-icon {
+    width: auto;
+    height: 50%;
+  }
+
+  .box-label {
+    font-size: min(30cqh, 8cqi);
+    flex: 1;
+    text-align: left;
+  }
+
+  .box-value {
+    font-size: min(40cqh, 12cqi);
+  }
+
+  .chart-area {
+    height: 45dvh;
+  }
+}
+
+/* Small display adjustments */
+@media (max-width: 250px) {
+  .energy-dashboard {
+    font-family: "Dogica";
+  }
+}
