@@ -143,8 +143,8 @@
   flex-direction: row;
   align-items: flex-end;
   flex: 1;
-  border-bottom: 1px solid rgba(128, 128, 128, 0.3);
-  border-left: 1px solid rgba(128, 128, 128, 0.3);
+  border-bottom: 1px solid black;
+  border-left: 1px solid black;
   gap: 1px;
   padding-bottom: 2.5dvh;
   /* room for x-axis labels */

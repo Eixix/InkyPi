@@ -165,9 +165,9 @@ class HAEnergy(BasePlugin):
 
         # Chart colors for each dataset
         colors = [
-            {"border": "rgba(76, 175, 80, 0.9)", "bg": "rgba(76, 175, 80, 0.45)"},   # green
-            {"border": "rgba(255, 183, 77, 0.9)", "bg": "rgba(255, 183, 77, 0.45)"},  # amber
-            {"border": "rgba(66, 165, 245, 0.9)", "bg": "rgba(66, 165, 245, 0.45)"},  # blue
+            {"border": "green", "bg": "green"},   # green
+            {"border": "red",   "bg": "red"},     # red
+            {"border": "blue",  "bg": "blue"},    # blue
         ]
 
         datasets = []
