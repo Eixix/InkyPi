@@ -141,14 +141,24 @@
 .chart-bars {
   display: flex;
   flex-direction: row;
-  align-items: flex-end;
+  align-items: center;
+  /* Center the zero-line vertically */
   flex: 1;
-  border-bottom: 1px solid black;
   border-left: 1px solid black;
   gap: 1px;
-  padding-bottom: 2.5dvh;
-  /* room for x-axis labels */
+  padding-bottom: 2dvh;
   position: relative;
+}
+
+.chart-zero-line {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background-color: black;
+  opacity: 0.5;
+  z-index: 1;
 }
 
 .bar-column {
@@ -157,15 +167,27 @@
   flex-direction: column;
   align-items: center;
   height: 100%;
-  justify-content: flex-end;
   position: relative;
 }
 
 .bar-stack {
   width: 80%;
-  height: 100%;
+  height: 50%;
+  /* Each stack takes half the height */
   display: flex;
+  z-index: 2;
+}
+
+.pos-stack {
   flex-direction: column-reverse;
+  justify-content: flex-start;
+  border-bottom: 1px solid transparent;
+  /* Align exactly to center */
+}
+
+.neg-stack {
+  flex-direction: column;
+  justify-content: flex-start;
 }
 
 .bar-segment {
@@ -175,7 +197,7 @@
 
 .bar-label {
   position: absolute;
-  bottom: -2.3dvh;
+  bottom: -2dvh;
   font-size: min(1.5dvh, 1.5vw);
   opacity: 0.6;
   white-space: nowrap;

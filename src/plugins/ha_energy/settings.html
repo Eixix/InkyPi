@@ -5,24 +5,38 @@
 </div>
 
 <div class="form-group">
-    <label for="primary_entity" class="form-label">Consumption Entity:</label>
-    <input type="text" id="primary_entity" name="primary_entity" class="form-input"
-        placeholder="sensor.electricity_consumption_today" />
-    <small style="opacity: 0.7;">Energy consumption sensor (total_increasing kWh)</small>
-</div>
-
-<div class="form-group">
-    <label for="secondary_entity" class="form-label">Production Entity (optional):</label>
-    <input type="text" id="secondary_entity" name="secondary_entity" class="form-input"
+    <label for="sensor_solar" class="form-label">Solar Production Entity:</label>
+    <input type="text" id="sensor_solar" name="sensor_solar" class="form-input"
         placeholder="sensor.solar_production_today" />
-    <small style="opacity: 0.7;">Solar / energy production sensor (total_increasing kWh)</small>
+    <small style="opacity: 0.7;">Photovoltaik sensor (total_increasing kWh)</small>
 </div>
 
 <div class="form-group">
-    <label for="tertiary_entity" class="form-label">Grid Export Entity (optional):</label>
-    <input type="text" id="tertiary_entity" name="tertiary_entity" class="form-input"
+    <label for="sensor_grid_import" class="form-label">Grid Import Entity:</label>
+    <input type="text" id="sensor_grid_import" name="sensor_grid_import" class="form-input"
+        placeholder="sensor.grid_import_today" />
+    <small style="opacity: 0.7;">Bezogene Energie aus Netz sensor (total_increasing kWh)</small>
+</div>
+
+<div class="form-group">
+    <label for="sensor_grid_export" class="form-label">Grid Export Entity:</label>
+    <input type="text" id="sensor_grid_export" name="sensor_grid_export" class="form-input"
         placeholder="sensor.grid_export_today" />
-    <small style="opacity: 0.7;">Grid export / feed-in sensor (total_increasing kWh)</small>
+    <small style="opacity: 0.7;">Eingespeiste Wirkenergie sensor (total_increasing kWh)</small>
+</div>
+
+<div class="form-group">
+    <label for="sensor_battery_charge" class="form-label">Battery Charge Entity:</label>
+    <input type="text" id="sensor_battery_charge" name="sensor_battery_charge" class="form-input"
+        placeholder="sensor.battery_charge_today" />
+    <small style="opacity: 0.7;">Batterieladung sensor (total_increasing kWh)</small>
+</div>
+
+<div class="form-group">
+    <label for="sensor_battery_discharge" class="form-label">Battery Discharge Entity:</label>
+    <input type="text" id="sensor_battery_discharge" name="sensor_battery_discharge" class="form-input"
+        placeholder="sensor.battery_discharge_today" />
+    <small style="opacity: 0.7;">Batterieentladung sensor (total_increasing kWh)</small>
 </div>
 
 <div class="form-group">
@@ -55,9 +69,11 @@
     document.addEventListener('DOMContentLoaded', () => {
         if (loadPluginSettings) {
             document.getElementById('ha_url').value = pluginSettings.ha_url || '';
-            document.getElementById('primary_entity').value = pluginSettings.primary_entity || '';
-            document.getElementById('secondary_entity').value = pluginSettings.secondary_entity || '';
-            document.getElementById('tertiary_entity').value = pluginSettings.tertiary_entity || '';
+            document.getElementById('sensor_solar').value = pluginSettings.sensor_solar || '';
+            document.getElementById('sensor_grid_import').value = pluginSettings.sensor_grid_import || '';
+            document.getElementById('sensor_grid_export').value = pluginSettings.sensor_grid_export || '';
+            document.getElementById('sensor_battery_charge').value = pluginSettings.sensor_battery_charge || '';
+            document.getElementById('sensor_battery_discharge').value = pluginSettings.sensor_battery_discharge || '';
             document.getElementById('display_title').value = pluginSettings.display_title || 'Energy';
 
             document.getElementById('show_refresh_time').checked = pluginSettings.show_refresh_time === 'true';

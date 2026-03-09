@@ -46,29 +46,46 @@
     </div>
 
     <!-- 24h Stacked Bar Chart (pure CSS) -->
-    {% if show_chart and bars %}
+    {% if show_chart and (pos_bars or neg_bars) %}
     <div class="chart-section">
         <div class="chart-title">24h Energy ({{ chart_unit }}/h)</div>
         <div class="chart-area">
             <div class="chart-y-axis">
                 <span>{{ chart_max }}</span>
-                <span>{{ (chart_max / 2) | round(1) }}</span>
                 <span>0</span>
+                <span>-{{ chart_max }}</span>
             </div>
             <div class="chart-bars">
-                {% for bar in bars %}
+
+                <!-- Zero Line -->
+                <div class="chart-zero-line"></div>
+
+                <!-- Iterate 24 columns -->
+                {% for h in range(24) %}
                 <div class="bar-column">
-                    <div class="bar-stack">
-                        {% for seg in bar.segments %}
+                    <!-- Positive Stack (Top half) -->
+                    <div class="bar-stack pos-stack">
+                        {% for seg in pos_bars[h].segments %}
                         {% if seg.pct > 0 %}
-                        <div class="bar-segment"
-                            style="height: {{ seg.pct }}%; background: {{ seg.color }}; border-top: 2px solid {{ seg.border }};">
+                        <div class="bar-segment" style="height: {{ seg.pct }}%; background: {{ seg.color }};">
                         </div>
                         {% endif %}
                         {% endfor %}
                     </div>
+
+                    <!-- Negative Stack (Bottom half) -->
+                    <div class="bar-stack neg-stack">
+                        {% for seg in neg_bars[h].segments %}
+                        {% if seg.pct > 0 %}
+                        <div class="bar-segment" style="height: {{ seg.pct }}%; background: {{ seg.color }};">
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+
+                    <!-- Time Label (every 3rd column) at very bottom -->
                     {% if loop.index0 % 3 == 0 %}
-                    <div class="bar-label">{{ bar.label }}</div>
+                    <div class="bar-label">{{ pos_bars[h].label }}</div>
                     {% endif %}
                 </div>
                 {% endfor %}
@@ -78,8 +95,7 @@
         <div class="chart-legend">
             {% for ds in chart_datasets %}
             <div class="legend-item">
-                <span class="legend-color"
-                    style="background: {{ ds.bg_color }}; border: 1px solid {{ ds.border_color }};"></span>
+                <span class="legend-color" style="background: {{ ds.bg_color }};"></span>
                 <span class="legend-label">{{ ds.label }}</span>
             </div>
             {% endfor %}
