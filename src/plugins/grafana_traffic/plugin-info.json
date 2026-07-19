@@ -1,0 +1,5 @@
+{
+    "display_name": "Grafana Traffic",
+    "id": "grafana_traffic",
+    "class": "GrafanaTraffic"
+}

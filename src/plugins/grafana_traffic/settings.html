@@ -1,0 +1,21 @@
+<div class="form-group">
+    <label for="grafana_url" class="form-label">Grafana URL:</label>
+    <input type="text" id="grafana_url" name="grafana_url" class="form-input" placeholder="https://logs.home" />
+</div>
+<div class="form-group">
+    <label for="display_title" class="form-label">Display Title:</label>
+    <input type="text" id="display_title" name="display_title" class="form-input" value="EXTERNAL TRAFFIC · 24 HOURS" />
+</div>
+<div class="form-group">
+    <input type="checkbox" id="verify_tls" name="verify_tls" onclick="this.value=this.checked ? 'true' : 'false';">
+    <span>Verify Grafana TLS certificate</span>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('grafana_url').value = (loadPluginSettings && pluginSettings.grafana_url) || 'https://logs.home';
+    document.getElementById('display_title').value = (loadPluginSettings && pluginSettings.display_title) || 'EXTERNAL TRAFFIC · 24 HOURS';
+    const verify = loadPluginSettings && pluginSettings.verify_tls === 'true';
+    document.getElementById('verify_tls').checked = verify;
+    document.getElementById('verify_tls').value = verify ? 'true' : 'false';
+});
+</script>

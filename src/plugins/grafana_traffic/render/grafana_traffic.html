@@ -1,0 +1,22 @@
+{% extends "plugin.html" %}
+{% block content %}
+<div class="traffic-dashboard">
+<svg viewBox="0 0 800 480" role="img" aria-label="External request volume over the last 24 hours">
+  <rect width="800" height="480" class="background"/>
+  <text x="38" y="43" class="title">{{ title }}</text>
+  <text x="762" y="35" text-anchor="end" class="metric">NOW {{ current }} req/min</text>
+  <text x="762" y="58" text-anchor="end" class="metric">PEAK {{ peak }} req/min</text>
+  {% for line in grid_lines %}
+  <line x1="{{ plot.left }}" y1="{{ line.y }}" x2="{{ plot.right }}" y2="{{ line.y }}" class="grid"/>
+  <text x="{{ plot.left - 12 }}" y="{{ line.y + 5 }}" text-anchor="end" class="axis">{{ line.label }}</text>
+  {% endfor %}
+  {% for label in time_labels %}<text x="{{ label.x }}" y="{{ plot.bottom + 32 }}" text-anchor="middle" class="axis">{{ label.label }}</text>{% endfor %}
+  {% if has_data %}
+  <polygon points="{{ area }}" class="traffic-area"/>
+  <polyline points="{{ polyline }}" class="traffic-line"/>
+  {% else %}<text x="400" y="245" text-anchor="middle" class="title">NO EXTERNAL REQUESTS</text>{% endif %}
+  <line x1="{{ plot.left }}" y1="{{ plot.bottom }}" x2="{{ plot.right }}" y2="{{ plot.bottom }}" class="baseline"/>
+  <text x="38" y="462" class="axis">5-minute rolling rate · updated {{ updated }} {{ timezone }}</text>
+</svg>
+</div>
+{% endblock %}
