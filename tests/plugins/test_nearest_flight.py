@@ -3,6 +3,8 @@ import sys
 from pathlib import Path
 
 import pytest
+import requests
+from unittest.mock import Mock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
@@ -32,6 +34,41 @@ def test_grounded_and_positionless_states_are_ignored():
     grounded[8] = False
     grounded[5] = None
     assert NearestFlight._parse_state(grounded, 52, 13) is None
+
+
+@patch("plugins.nearest_flight.nearest_flight.get_http_session")
+def test_enrichment_adds_route_and_aircraft_details(get_session):
+    response = Mock(status_code=200)
+    response.json.return_value = {"response": {
+        "aircraft": {
+            "registration": "D-AIXA", "manufacturer": "Airbus",
+            "type": "A350-900", "icao_type": "A359",
+            "registered_owner": "Lufthansa"
+        },
+        "flightroute": {
+            "airline": {"name": "Lufthansa"},
+            "origin": {"iata_code": "FRA", "icao_code": "EDDF", "municipality": "Frankfurt"},
+            "destination": {"iata_code": "JFK", "icao_code": "KJFK", "municipality": "New York"}
+        }
+    }}
+    get_session.return_value.get.return_value = response
+    aircraft = {"icao24": "3C64F0", "callsign": "DLH400"}
+
+    NearestFlight({"id": "nearest_flight"})._enrich_aircraft(aircraft)
+
+    assert aircraft["registration"] == "D-AIXA"
+    assert aircraft["model"] == "A350-900"
+    assert aircraft["operator"] == "Lufthansa"
+    assert aircraft["origin"] == {"code": "FRA", "name": "Frankfurt"}
+    assert aircraft["destination"] == {"code": "JFK", "name": "New York"}
+
+
+@patch("plugins.nearest_flight.nearest_flight.get_http_session")
+def test_enrichment_failure_keeps_live_aircraft_usable(get_session):
+    get_session.return_value.get.side_effect = requests.Timeout
+    aircraft = {"icao24": "ABC123", "callsign": "TEST42"}
+    NearestFlight({"id": "nearest_flight"})._enrich_aircraft(aircraft)
+    assert aircraft == {"icao24": "ABC123", "callsign": "TEST42"}
 
 
 @pytest.mark.parametrize("value", [0, 251, "oops"])

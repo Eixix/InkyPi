@@ -11,6 +11,7 @@ from utils.http_client import get_http_session
 logger = logging.getLogger(__name__)
 
 OPENSKY_STATES_URL = "https://opensky-network.org/api/states/all"
+ADSBDB_AIRCRAFT_URL = "https://api.adsbdb.com/v0/aircraft/{icao24}"
 EARTH_RADIUS_KM = 6371.0088
 
 
@@ -87,7 +88,51 @@ class NearestFlight(BasePlugin):
             if parsed and parsed["distance_km"] <= radius_km:
                 if nearest is None or parsed["distance_km"] < nearest["distance_km"]:
                     nearest = parsed
+        if nearest:
+            self._enrich_aircraft(nearest)
         return nearest
+
+    def _enrich_aircraft(self, aircraft):
+        """Add aircraft and route metadata without making it required for display."""
+        url = ADSBDB_AIRCRAFT_URL.format(icao24=aircraft["icao24"])
+        params = {}
+        if aircraft["callsign"] != "Unknown flight":
+            params["callsign"] = aircraft["callsign"]
+
+        try:
+            response = get_http_session().get(url, params=params, timeout=10)
+            if response.status_code == 404:
+                return
+            response.raise_for_status()
+            payload = response.json().get("response", {})
+            if not isinstance(payload, dict):
+                return
+            details = payload.get("aircraft") or {}
+            route = payload.get("flightroute") or {}
+            airline = route.get("airline") or {}
+
+            aircraft.update({
+                "registration": details.get("registration") or None,
+                "manufacturer": details.get("manufacturer") or None,
+                "model": details.get("type") or details.get("icao_type") or None,
+                "type_code": details.get("icao_type") or None,
+                "operator": airline.get("name") or details.get("registered_owner") or None,
+                "origin": self._airport(route.get("origin")),
+                "destination": self._airport(route.get("destination")),
+                "midpoint": self._airport(route.get("midpoint")),
+            })
+        except (requests.RequestException, ValueError, AttributeError, TypeError):
+            logger.warning("Could not enrich aircraft %s with ADSBDB", aircraft["icao24"], exc_info=True)
+
+    @staticmethod
+    def _airport(data):
+        if not isinstance(data, dict):
+            return None
+        code = data.get("iata_code") or data.get("icao_code")
+        name = data.get("municipality") or data.get("name")
+        if not code and not name:
+            return None
+        return {"code": code or "—", "name": name or code}
 
     @staticmethod
     def _bounding_box(latitude, longitude, radius_km):
@@ -124,6 +169,14 @@ class NearestFlight(BasePlugin):
             "heading": round(float(heading)) if heading is not None else None,
             "heading_arrow": cls._heading_arrow(heading),
             "vertical_trend": cls._vertical_trend(vertical_rate),
+            "registration": None,
+            "manufacturer": None,
+            "model": None,
+            "type_code": None,
+            "operator": None,
+            "origin": None,
+            "destination": None,
+            "midpoint": None,
         }
 
     @staticmethod

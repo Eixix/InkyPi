@@ -12,8 +12,32 @@
 
     {% if aircraft %}
     <section class="identity">
-        <div class="callsign">{{ aircraft.callsign }}</div>
-        <div class="country">{{ aircraft.country }} · {{ aircraft.icao24 }}</div>
+        <div>
+            <div class="callsign">{{ aircraft.callsign }}</div>
+            <div class="country">
+                {% if aircraft.operator %}{{ aircraft.operator }} · {% endif %}
+                {{ aircraft.registration or aircraft.icao24 }}
+            </div>
+        </div>
+        <div class="aircraft-model">
+            <strong>{{ aircraft.model or 'Aircraft model unavailable' }}</strong>
+            {% if aircraft.manufacturer %}<span>{{ aircraft.manufacturer }}{% if aircraft.type_code %} · {{ aircraft.type_code }}{% endif %}</span>{% endif %}
+        </div>
+    </section>
+    <section class="route">
+        <div class="airport">
+            <span>Departure</span>
+            <strong>{{ aircraft.origin.code if aircraft.origin else '—' }}</strong>
+            <small>{{ aircraft.origin.name if aircraft.origin else 'Route unavailable' }}</small>
+        </div>
+        <div class="route-line">
+            <span>●</span><i></i><b>✈</b><i></i><span>●</span>
+        </div>
+        <div class="airport destination">
+            <span>Destination</span>
+            <strong>{{ aircraft.destination.code if aircraft.destination else '—' }}</strong>
+            <small>{{ aircraft.destination.name if aircraft.destination else 'Route unavailable' }}</small>
+        </div>
     </section>
     <section class="metrics">
         <div><strong>{{ aircraft.distance_km }}</strong><span>km {{ aircraft.bearing }}</span></div>
