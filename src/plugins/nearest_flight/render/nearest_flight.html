@@ -1,13 +1,18 @@
 {% extends "plugin.html" %}
 
 {% block content %}
-<main class="flight-card">
+<main class="flight-card" style="--accent: {{ theme.accent }}; --accent-text: {{ theme.accent_text }};">
     <header>
         <div>
             <h1>{{ title }}</h1>
             <p class="location">Near {{ location_name }}</p>
         </div>
-        <div class="plane" aria-hidden="true">✈</div>
+        {% if aircraft %}
+        <div class="distance-badge">
+            <strong>{{ aircraft.distance_km }} km</strong>
+            <span>away {{ aircraft.relative_arrow }}</span>
+        </div>
+        {% else %}<div class="plane" aria-hidden="true">✈</div>{% endif %}
     </header>
 
     {% if aircraft %}
@@ -20,27 +25,32 @@
             </div>
         </div>
         <div class="aircraft-model">
-            <strong>{{ aircraft.model or 'Aircraft model unavailable' }}</strong>
+            <strong>{{ aircraft.model or 'Model unknown' }}</strong>
             {% if aircraft.manufacturer %}<span>{{ aircraft.manufacturer }}{% if aircraft.type_code %} · {{ aircraft.type_code }}{% endif %}</span>{% endif %}
         </div>
     </section>
     <section class="route">
         <div class="airport">
             <span>Departure</span>
-            <strong>{{ aircraft.origin.code if aircraft.origin else '—' }}</strong>
-            <small>{{ aircraft.origin.name if aircraft.origin else 'Route unavailable' }}</small>
+            <strong>{{ aircraft.origin.code if aircraft.origin else 'Unknown' }}</strong>
+            <small>{{ aircraft.origin.name if aircraft.origin else 'No route data' }}</small>
         </div>
         <div class="route-line">
-            <span>●</span><i></i><b>✈</b><i></i><span>●</span>
+            <i></i>
+            <span class="route-start">●</span>
+            <b class="route-plane {% if aircraft.route_progress is none %}unknown-progress{% endif %}"
+               style="left: {{ aircraft.route_progress if aircraft.route_progress is not none else 50 }}%;">✈</b>
+            <span class="route-end">●</span>
+            {% if aircraft.route_progress is not none %}<small>{{ aircraft.route_progress }}%</small>{% endif %}
         </div>
         <div class="airport destination">
             <span>Destination</span>
-            <strong>{{ aircraft.destination.code if aircraft.destination else '—' }}</strong>
-            <small>{{ aircraft.destination.name if aircraft.destination else 'Route unavailable' }}</small>
+            <strong>{{ aircraft.destination.code if aircraft.destination else 'Unknown' }}</strong>
+            <small>{{ aircraft.destination.name if aircraft.destination else 'No route data' }}</small>
         </div>
     </section>
     <section class="metrics">
-        <div><strong>{{ aircraft.distance_km }}</strong><span>km {{ aircraft.bearing }}</span></div>
+        <div><strong>{{ aircraft.relative_arrow }} {{ aircraft.bearing }}</strong><span>from location · screen faces {{ display_facing }}</span></div>
         <div><strong>{{ aircraft.altitude_m if aircraft.altitude_m is not none else '—' }}</strong><span>metres altitude</span></div>
         <div><strong>{{ aircraft.speed_kmh if aircraft.speed_kmh is not none else '—' }}</strong><span>km/h</span></div>
     </section>

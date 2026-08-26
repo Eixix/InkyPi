@@ -19,6 +19,23 @@
     <label for="title" class="form-label">Title:</label>
     <input type="text" id="title" name="title" class="form-input" value="Nearest flight" />
 </div>
+<div class="form-group">
+    <label for="display_facing" class="form-label">Display faces:</label>
+    <select id="display_facing" name="display_facing" class="form-input">
+        <option value="N">North</option><option value="NE">North-east</option>
+        <option value="E">East</option><option value="SE">South-east</option>
+        <option value="S">South</option><option value="SW">South-west</option>
+        <option value="W">West</option><option value="NW">North-west</option>
+    </select>
+    <small style="opacity: .7">Corrects the arrow so up means straight ahead from the display.</small>
+</div>
+<div class="form-group">
+    <label for="color_theme" class="form-label">High-contrast accent:</label>
+    <select id="color_theme" name="color_theme" class="form-input">
+        <option value="blue">Blue</option><option value="red">Red</option>
+        <option value="yellow">Yellow</option><option value="black">Black</option>
+    </select>
+</div>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
@@ -28,5 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('longitude').value = pluginSettings.longitude || '';
     document.getElementById('radius_km').value = pluginSettings.radius_km || '100';
     document.getElementById('title').value = pluginSettings.title || 'Nearest flight';
+    document.getElementById('display_facing').value = pluginSettings.display_facing || 'N';
+    document.getElementById('color_theme').value = pluginSettings.color_theme || 'blue';
 });
 </script>

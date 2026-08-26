@@ -12,7 +12,23 @@ logger = logging.getLogger(__name__)
 
 OPENSKY_STATES_URL = "https://opensky-network.org/api/states/all"
 ADSBDB_AIRCRAFT_URL = "https://api.adsbdb.com/v0/aircraft/{icao24}"
+ADSBDB_CALLSIGN_URL = "https://api.adsbdb.com/v0/callsign/{callsign}"
+HEXDB_AIRCRAFT_URL = "https://hexdb.io/api/v1/aircraft/{icao24}"
+HEXDB_ROUTE_URL = "https://hexdb.io/api/v1/route/icao/{callsign}"
+HEXDB_AIRPORT_URL = "https://hexdb.io/api/v1/airport/icao/{icao}"
 EARTH_RADIUS_KM = 6371.0088
+
+FACING_DEGREES = {
+    "N": 0, "NE": 45, "E": 90, "SE": 135,
+    "S": 180, "SW": 225, "W": 270, "NW": 315,
+}
+
+COLOR_THEMES = {
+    "blue": {"accent": "#0057b8", "accent_text": "#ffffff"},
+    "red": {"accent": "#c8102e", "accent_text": "#ffffff"},
+    "yellow": {"accent": "#ffd800", "accent_text": "#000000"},
+    "black": {"accent": "#000000", "accent_text": "#ffffff"},
+}
 
 
 class NearestFlight(BasePlugin):
@@ -29,6 +45,15 @@ class NearestFlight(BasePlugin):
         radius_km = self._radius(settings.get("radius_km", 100))
 
         aircraft = self._fetch_nearest(latitude, longitude, radius_km)
+        facing = str(settings.get("display_facing", "N")).upper()
+        if facing not in FACING_DEGREES:
+            facing = "N"
+        if aircraft:
+            relative_bearing = (aircraft["bearing_degrees"] - FACING_DEGREES[facing]) % 360
+            aircraft["relative_arrow"] = self._heading_arrow(relative_bearing)
+
+        theme_name = str(settings.get("color_theme", "blue")).lower()
+        theme = COLOR_THEMES.get(theme_name, COLOR_THEMES["blue"])
         dimensions = device_config.get_resolution()
         if device_config.get_config("orientation") == "vertical":
             dimensions = dimensions[::-1]
@@ -39,6 +64,8 @@ class NearestFlight(BasePlugin):
             "aircraft": aircraft,
             "radius_km": round(radius_km),
             "refreshed_at": datetime.now().strftime("%H:%M"),
+            "display_facing": facing,
+            "theme": theme,
             "plugin_settings": settings,
         }
         return self.render_image(dimensions, "nearest_flight.html", "nearest_flight.css", params)
@@ -90,6 +117,7 @@ class NearestFlight(BasePlugin):
                     nearest = parsed
         if nearest:
             self._enrich_aircraft(nearest)
+            nearest["route_progress"] = self._route_progress(nearest)
         return nearest
 
     def _enrich_aircraft(self, aircraft):
@@ -99,16 +127,29 @@ class NearestFlight(BasePlugin):
         if aircraft["callsign"] != "Unknown flight":
             params["callsign"] = aircraft["callsign"]
 
+        route = {}
         try:
             response = get_http_session().get(url, params=params, timeout=10)
-            if response.status_code == 404:
-                return
-            response.raise_for_status()
-            payload = response.json().get("response", {})
+            if response.status_code != 404:
+                response.raise_for_status()
+                payload = response.json().get("response", {})
+            else:
+                payload = {}
             if not isinstance(payload, dict):
-                return
+                payload = {}
             details = payload.get("aircraft") or {}
             route = payload.get("flightroute") or {}
+
+            # Route data can exist even when the airframe is absent from ADSBDB.
+            if not route and aircraft["callsign"] != "Unknown flight":
+                route_response = get_http_session().get(
+                    ADSBDB_CALLSIGN_URL.format(callsign=aircraft["callsign"]), timeout=10
+                )
+                if route_response.status_code != 404:
+                    route_response.raise_for_status()
+                    route_payload = route_response.json().get("response", {})
+                    if isinstance(route_payload, dict):
+                        route = route_payload.get("flightroute") or {}
             airline = route.get("airline") or {}
 
             aircraft.update({
@@ -123,6 +164,57 @@ class NearestFlight(BasePlugin):
             })
         except (requests.RequestException, ValueError, AttributeError, TypeError):
             logger.warning("Could not enrich aircraft %s with ADSBDB", aircraft["icao24"], exc_info=True)
+        self._enrich_from_hexdb(aircraft)
+
+    def _enrich_from_hexdb(self, aircraft):
+        """Fill fields that ADSBDB could not supply using HexDB."""
+        session = get_http_session()
+        if not aircraft.get("model") or not aircraft.get("registration"):
+            try:
+                response = session.get(
+                    HEXDB_AIRCRAFT_URL.format(icao24=aircraft["icao24"]), timeout=10
+                )
+                if response.status_code != 404:
+                    response.raise_for_status()
+                    details = response.json()
+                    if isinstance(details, dict) and "error" not in details:
+                        aircraft["registration"] = aircraft.get("registration") or details.get("Registration")
+                        aircraft["manufacturer"] = aircraft.get("manufacturer") or details.get("Manufacturer")
+                        aircraft["model"] = aircraft.get("model") or details.get("Type") or details.get("ICAOTypeCode")
+                        aircraft["type_code"] = aircraft.get("type_code") or details.get("ICAOTypeCode")
+                        aircraft["operator"] = aircraft.get("operator") or details.get("RegisteredOwners")
+            except (requests.RequestException, ValueError, AttributeError, TypeError):
+                logger.warning("HexDB aircraft lookup failed for %s", aircraft["icao24"])
+
+        if (not aircraft.get("origin") or not aircraft.get("destination")) and aircraft.get("callsign") != "Unknown flight":
+            try:
+                response = session.get(
+                    HEXDB_ROUTE_URL.format(callsign=aircraft["callsign"]), timeout=10
+                )
+                if response.status_code != 404:
+                    response.raise_for_status()
+                    route = response.json().get("route", "")
+                    stops = [stop.strip().upper() for stop in route.split("-") if stop.strip()]
+                    if len(stops) >= 2:
+                        aircraft["origin"] = aircraft.get("origin") or self._hexdb_airport(stops[0])
+                        aircraft["destination"] = aircraft.get("destination") or self._hexdb_airport(stops[-1])
+            except (requests.RequestException, ValueError, AttributeError, TypeError):
+                logger.warning("HexDB route lookup failed for %s", aircraft.get("callsign"))
+
+    @staticmethod
+    def _hexdb_airport(icao):
+        try:
+            response = get_http_session().get(HEXDB_AIRPORT_URL.format(icao=icao), timeout=10)
+            if response.status_code == 404:
+                return {"code": icao, "name": icao}
+            response.raise_for_status()
+            data = response.json()
+            return {
+                "code": data.get("iata") or data.get("icao") or icao,
+                "name": data.get("airport") or data.get("region_name") or icao,
+            }
+        except (requests.RequestException, ValueError, AttributeError, TypeError):
+            return {"code": icao, "name": icao}
 
     @staticmethod
     def _airport(data):
@@ -132,7 +224,34 @@ class NearestFlight(BasePlugin):
         name = data.get("municipality") or data.get("name")
         if not code and not name:
             return None
-        return {"code": code or "—", "name": name or code}
+        airport = {"code": code or "—", "name": name or code}
+        if data.get("latitude") is not None and data.get("longitude") is not None:
+            airport["latitude"] = float(data["latitude"])
+            airport["longitude"] = float(data["longitude"])
+        return airport
+
+    @classmethod
+    def _route_progress(cls, aircraft):
+        origin = aircraft.get("origin") or {}
+        destination = aircraft.get("destination") or {}
+        required = (
+            origin.get("latitude"), origin.get("longitude"),
+            destination.get("latitude"), destination.get("longitude"),
+            aircraft.get("latitude"), aircraft.get("longitude"),
+        )
+        if any(value is None for value in required):
+            return None
+        total = cls._distance_km(
+            origin["latitude"], origin["longitude"],
+            destination["latitude"], destination["longitude"],
+        )
+        if total < 1:
+            return None
+        travelled = cls._distance_km(
+            origin["latitude"], origin["longitude"],
+            aircraft["latitude"], aircraft["longitude"],
+        )
+        return round(max(0, min(100, travelled / total * 100)))
 
     @staticmethod
     def _bounding_box(latitude, longitude, radius_km):
@@ -162,8 +281,11 @@ class NearestFlight(BasePlugin):
             "icao24": (state[0] or "").upper(),
             "callsign": (state[1] or "").strip() or "Unknown flight",
             "country": state[2] or "Unknown origin",
+            "longitude": aircraft_lon,
+            "latitude": aircraft_lat,
             "distance_km": round(distance, 1),
             "bearing": cls._compass_direction(bearing),
+            "bearing_degrees": round(bearing),
             "altitude_m": round(float(altitude_m)) if altitude_m is not None else None,
             "speed_kmh": round(float(state[9]) * 3.6) if state[9] is not None else None,
             "heading": round(float(heading)) if heading is not None else None,

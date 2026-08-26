@@ -3,23 +3,31 @@
 .flight-card h1 { font-size: min(7dvw, 7dvh); line-height: 1; }
 .location, .country { font-size: min(3.2dvw, 3.2dvh); margin-top: .7dvh; }
 .plane { font-size: min(12dvw, 12dvh); line-height: .8; transform: rotate(-12deg); }
+.distance-badge { background: var(--accent); color: var(--accent-text); padding: 1.2dvh 2dvw; text-align: center; min-width: 18dvw; }
+.distance-badge strong, .distance-badge span { display: block; }
+.distance-badge strong { font-size: min(5.5dvw, 5.5dvh); line-height: 1; }
+.distance-badge span { font-size: min(2.5dvw, 2.5dvh); margin-top: .6dvh; text-transform: uppercase; }
 .identity { display: flex; align-items: flex-end; justify-content: space-between; padding: 1.5dvh 0; }
 .callsign { font-size: min(10dvw, 10dvh); font-weight: 700; line-height: 1; letter-spacing: .04em; }
 .aircraft-model { max-width: 48%; text-align: right; }
 .aircraft-model strong, .aircraft-model span { display: block; }
 .aircraft-model strong { font-size: min(4dvw, 4dvh); line-height: 1.05; }
 .aircraft-model span { font-size: min(2.4dvw, 2.4dvh); margin-top: .7dvh; text-transform: uppercase; }
-.route { flex: 1; display: grid; grid-template-columns: 1fr 1.2fr 1fr; align-items: center; border-top: .35dvh solid currentColor; padding: 1.2dvh 0; }
+.route { flex: 1; display: grid; grid-template-columns: 1fr 1.2fr 1fr; align-items: center; border-top: .35dvh solid var(--accent); padding: 1.2dvh 0; }
 .airport span, .airport strong, .airport small { display: block; }
 .airport span { font-size: min(2.2dvw, 2.2dvh); text-transform: uppercase; letter-spacing: .08em; }
-.airport strong { font-size: min(7dvw, 7dvh); line-height: 1; }
+.airport strong { color: var(--accent); font-size: min(7dvw, 7dvh); line-height: 1; }
 .airport small { font-size: min(2.5dvw, 2.5dvh); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .destination { text-align: right; }
-.route-line { display: flex; align-items: center; padding: 0 1.5dvw; }
-.route-line i { height: .25dvh; background: currentColor; flex: 1; }
-.route-line b { font-size: min(4dvw, 4dvh); padding: 0 .5dvw; }
-.route-line span { font-size: min(2dvw, 2dvh); }
-.metrics { display: grid; grid-template-columns: repeat(3, 1fr); border-top: .35dvh solid currentColor; border-bottom: .35dvh solid currentColor; }
+.route-line { position: relative; height: 7dvh; margin: 0 2dvw; }
+.route-line i { position: absolute; top: 3dvh; left: 0; right: 0; height: .4dvh; background: var(--accent); }
+.route-line span { position: absolute; top: 2.15dvh; color: var(--accent); font-size: min(2dvw, 2dvh); }
+.route-start { left: -.3dvw; }
+.route-end { right: -.3dvw; }
+.route-plane { position: absolute; top: .5dvh; color: var(--accent); font-size: min(4dvw, 4dvh); transform: translateX(-50%); }
+.route-plane.unknown-progress { opacity: .5; }
+.route-line small { position: absolute; top: 5dvh; left: 50%; transform: translateX(-50%); font-size: min(2dvw, 2dvh); font-weight: 700; }
+.metrics { display: grid; grid-template-columns: repeat(3, 1fr); border-top: .35dvh solid var(--accent); border-bottom: .35dvh solid var(--accent); }
 .metrics div { padding: 1.2dvh 2dvw; border-right: .25dvh solid currentColor; }
 .metrics div:last-child { border-right: 0; }
 .metrics strong, .metrics span { display: block; }

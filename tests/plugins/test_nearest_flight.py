@@ -71,6 +71,23 @@ def test_enrichment_failure_keeps_live_aircraft_usable(get_session):
     assert aircraft == {"icao24": "ABC123", "callsign": "TEST42"}
 
 
+def test_route_progress_uses_live_position_and_is_clamped():
+    aircraft = {
+        "origin": {"latitude": 0, "longitude": 0},
+        "destination": {"latitude": 0, "longitude": 10},
+        "latitude": 0, "longitude": 5,
+    }
+    assert NearestFlight._route_progress(aircraft) == 50
+    aircraft["longitude"] = 12
+    assert NearestFlight._route_progress(aircraft) == 100
+
+
+def test_display_facing_correction_rotates_relative_arrow():
+    # An aircraft east of the location is straight ahead when the display faces east.
+    relative_bearing = (90 - 90) % 360
+    assert NearestFlight._heading_arrow(relative_bearing) == "↑"
+
+
 @pytest.mark.parametrize("value", [0, 251, "oops"])
 def test_radius_validation(value):
     with pytest.raises(RuntimeError):
