@@ -1,0 +1,32 @@
+<div class="form-group">
+    <label for="location_name" class="form-label">Location name:</label>
+    <input type="text" id="location_name" name="location_name" class="form-input" placeholder="Home" />
+</div>
+<div class="form-group">
+    <label for="latitude" class="form-label">Latitude:</label>
+    <input type="number" id="latitude" name="latitude" class="form-input" min="-90" max="90" step="any" required placeholder="52.5200" />
+</div>
+<div class="form-group">
+    <label for="longitude" class="form-label">Longitude:</label>
+    <input type="number" id="longitude" name="longitude" class="form-input" min="-180" max="180" step="any" required placeholder="13.4050" />
+</div>
+<div class="form-group">
+    <label for="radius_km" class="form-label">Search radius (km):</label>
+    <input type="number" id="radius_km" name="radius_km" class="form-input" min="1" max="250" value="100" />
+    <small style="opacity: .7">Shows the closest airborne aircraft reported by OpenSky.</small>
+</div>
+<div class="form-group">
+    <label for="title" class="form-label">Title:</label>
+    <input type="text" id="title" name="title" class="form-input" value="Nearest flight" />
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    if (!loadPluginSettings) return;
+    document.getElementById('location_name').value = pluginSettings.location_name || '';
+    document.getElementById('latitude').value = pluginSettings.latitude || '';
+    document.getElementById('longitude').value = pluginSettings.longitude || '';
+    document.getElementById('radius_km').value = pluginSettings.radius_km || '100';
+    document.getElementById('title').value = pluginSettings.title || 'Nearest flight';
+});
+</script>

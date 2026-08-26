@@ -1,0 +1,5 @@
+{
+    "display_name": "Nearest Flight",
+    "id": "nearest_flight",
+    "class": "NearestFlight"
+}

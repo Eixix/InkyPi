@@ -1,0 +1,37 @@
+{% extends "plugin.html" %}
+
+{% block content %}
+<main class="flight-card">
+    <header>
+        <div>
+            <h1>{{ title }}</h1>
+            <p class="location">Near {{ location_name }}</p>
+        </div>
+        <div class="plane" aria-hidden="true">✈</div>
+    </header>
+
+    {% if aircraft %}
+    <section class="identity">
+        <div class="callsign">{{ aircraft.callsign }}</div>
+        <div class="country">{{ aircraft.country }} · {{ aircraft.icao24 }}</div>
+    </section>
+    <section class="metrics">
+        <div><strong>{{ aircraft.distance_km }}</strong><span>km {{ aircraft.bearing }}</span></div>
+        <div><strong>{{ aircraft.altitude_m if aircraft.altitude_m is not none else '—' }}</strong><span>metres altitude</span></div>
+        <div><strong>{{ aircraft.speed_kmh if aircraft.speed_kmh is not none else '—' }}</strong><span>km/h</span></div>
+    </section>
+    <footer>
+        <span class="course">{{ aircraft.heading_arrow }} {{ aircraft.heading if aircraft.heading is not none else '—' }}°</span>
+        <span>{{ aircraft.vertical_trend }}</span>
+        <span>Updated {{ refreshed_at }}</span>
+    </footer>
+    {% else %}
+    <section class="empty">
+        <div class="radar">◎</div>
+        <h2>No airborne aircraft found</h2>
+        <p>within {{ radius_km }} km</p>
+    </section>
+    <footer><span>Live data by OpenSky</span><span>Updated {{ refreshed_at }}</span></footer>
+    {% endif %}
+</main>
+{% endblock %}
