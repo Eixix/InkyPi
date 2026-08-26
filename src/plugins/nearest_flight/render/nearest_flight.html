@@ -39,7 +39,7 @@
             <i></i>
             <span class="route-start">●</span>
             <b class="route-plane {% if aircraft.route_progress is none %}unknown-progress{% endif %}"
-               style="left: {{ aircraft.route_progress if aircraft.route_progress is not none else 50 }}%;">✈</b>
+               style="left: {{ aircraft.route_progress if aircraft.route_progress is not none else 50 }}%;"><span>✈</span></b>
             <span class="route-end">●</span>
             {% if aircraft.route_progress is not none %}<small>{{ aircraft.route_progress }}%</small>{% endif %}
         </div>

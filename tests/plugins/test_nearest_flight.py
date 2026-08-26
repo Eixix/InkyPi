@@ -71,15 +71,21 @@ def test_enrichment_failure_keeps_live_aircraft_usable(get_session):
     assert aircraft == {"icao24": "ABC123", "callsign": "TEST42"}
 
 
-def test_route_progress_uses_live_position_and_is_clamped():
+def test_route_progress_uses_relative_distance_to_both_endpoints():
     aircraft = {
         "origin": {"latitude": 0, "longitude": 0},
         "destination": {"latitude": 0, "longitude": 10},
         "latitude": 0, "longitude": 5,
     }
     assert NearestFlight._route_progress(aircraft) == 50
-    aircraft["longitude"] = 12
-    assert NearestFlight._route_progress(aircraft) == 100
+    aircraft["longitude"] = 9
+    assert NearestFlight._route_progress(aircraft) == 90
+
+
+def test_same_airport_route_is_rejected():
+    origin = {"code": "LHR", "latitude": 51.47, "longitude": -0.45}
+    assert NearestFlight._same_airport(origin, {"code": "LHR"}) is True
+    assert NearestFlight._same_airport(origin, {"code": "JFK"}) is False
 
 
 def test_display_facing_correction_rotates_relative_arrow():

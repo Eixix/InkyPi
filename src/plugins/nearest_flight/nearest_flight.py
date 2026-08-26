@@ -186,7 +186,12 @@ class NearestFlight(BasePlugin):
             except (requests.RequestException, ValueError, AttributeError, TypeError):
                 logger.warning("HexDB aircraft lookup failed for %s", aircraft["icao24"])
 
-        if (not aircraft.get("origin") or not aircraft.get("destination")) and aircraft.get("callsign") != "Unknown flight":
+        needs_route = (
+            not aircraft.get("origin")
+            or not aircraft.get("destination")
+            or self._same_airport(aircraft.get("origin"), aircraft.get("destination"))
+        )
+        if needs_route and aircraft.get("callsign") != "Unknown flight":
             try:
                 response = session.get(
                     HEXDB_ROUTE_URL.format(callsign=aircraft["callsign"]), timeout=10
@@ -195,11 +200,38 @@ class NearestFlight(BasePlugin):
                     response.raise_for_status()
                     route = response.json().get("route", "")
                     stops = [stop.strip().upper() for stop in route.split("-") if stop.strip()]
-                    if len(stops) >= 2:
-                        aircraft["origin"] = aircraft.get("origin") or self._hexdb_airport(stops[0])
-                        aircraft["destination"] = aircraft.get("destination") or self._hexdb_airport(stops[-1])
+                    if len(stops) >= 2 and stops[0] != stops[-1]:
+                        # Replace an invalid same-airport ADSBDB route, otherwise only fill gaps.
+                        if self._same_airport(aircraft.get("origin"), aircraft.get("destination")):
+                            aircraft["origin"] = self._hexdb_airport(stops[0])
+                            aircraft["destination"] = self._hexdb_airport(stops[-1])
+                        else:
+                            aircraft["origin"] = aircraft.get("origin") or self._hexdb_airport(stops[0])
+                            aircraft["destination"] = aircraft.get("destination") or self._hexdb_airport(stops[-1])
             except (requests.RequestException, ValueError, AttributeError, TypeError):
                 logger.warning("HexDB route lookup failed for %s", aircraft.get("callsign"))
+
+        # Never present a demonstrably invalid route as factual.
+        if self._same_airport(aircraft.get("origin"), aircraft.get("destination")):
+            aircraft["origin"] = None
+            aircraft["destination"] = None
+
+    @staticmethod
+    def _same_airport(origin, destination):
+        if not origin or not destination:
+            return False
+        origin_code = str(origin.get("code") or "").strip().upper()
+        destination_code = str(destination.get("code") or "").strip().upper()
+        if origin_code and destination_code and origin_code == destination_code:
+            return True
+        coordinates = (
+            origin.get("latitude"), origin.get("longitude"),
+            destination.get("latitude"), destination.get("longitude"),
+        )
+        return all(value is not None for value in coordinates) and (
+            abs(float(coordinates[0]) - float(coordinates[2])) < 0.001
+            and abs(float(coordinates[1]) - float(coordinates[3])) < 0.001
+        )
 
     @staticmethod
     def _hexdb_airport(icao):
@@ -241,17 +273,17 @@ class NearestFlight(BasePlugin):
         )
         if any(value is None for value in required):
             return None
-        total = cls._distance_km(
-            origin["latitude"], origin["longitude"],
-            destination["latitude"], destination["longitude"],
-        )
-        if total < 1:
-            return None
         travelled = cls._distance_km(
             origin["latitude"], origin["longitude"],
             aircraft["latitude"], aircraft["longitude"],
         )
-        return round(max(0, min(100, travelled / total * 100)))
+        remaining = cls._distance_km(
+            aircraft["latitude"], aircraft["longitude"],
+            destination["latitude"], destination["longitude"],
+        )
+        if travelled + remaining < 1:
+            return None
+        return round(max(0, min(100, travelled / (travelled + remaining) * 100)))
 
     @staticmethod
     def _bounding_box(latitude, longitude, radius_km):
